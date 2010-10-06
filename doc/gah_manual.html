@@ -1,0 +1,566 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
+<title>GNU Annotated Hex 0.4 User Manual</title>
+<!--
+     Copyright (C) 2006 Dan Hipschman
+
+     Permission is granted to copy, distribute and/or modify this
+     document under the terms of the GNU Free Documentation License,
+     Version 1.2 or any later version published by the Free Software
+     Foundation; with no Invariant Sections, with the Front-Cover texts
+     being "A GNU Manual," and with the Back-Cover Texts as in (a)
+     below.  A copy of the license is included in the section entitled
+     "GNU Free Documentation License."
+
+     (a) The FSF's Back-Cover Text is: "You have freedom to copy and
+     modify this GNU Manual, like GNU software.  Copies published by
+     the Free Software Foundation raise funds for GNU development."
+-->
+</head>
+
+<body>
+<h1>GNU Annotated Hex 0.4 User Manual</h1>
+
+<h2>Table of Contents</h2>
+<ul>
+  <li><a href="#Introduction">1 Introduction</a></li>
+  <li><a href="#Invocation">2 Program Invocation</a></li>
+  <li><a href="#Viewer">3 Using the Viewer</a>
+  <ul>
+    <li><a href="#KeyBindings">3.1 Key Bindings</a></li>
+    <li><a href="#Display">3.2 Understanding the Display</a></li>
+  </ul></li>
+  <li><a href="#Language">4 Writing Annotations</a>
+  <ul>
+    <li><a href="#Annotations">4.1 Annotations</a>
+    <ul>
+      <li><a href="#Types">Types</a></li>
+      <li><a href="#Structures">Structures</a></li>
+      <li><a href="#Arrays">Arrays</a></li>
+      <li><a href="#Parameters">Parameters</a></li>
+    </ul></li>
+    <li><a href="#Declarations">4.2 Declarations</a>
+    <ul>
+      <li><a href="#Endianness">Endianness</a></li>
+    </ul></li>
+    <li><a href="#Statements">4.3 Statements</a>
+    <ul>
+      <li><a href="#ControlFlow">Control Flow</a></li>
+      <li><a href="#Set">Set</a></li>
+    </ul></li>
+    <li><a href="#Expressions">4.4 Expressions</a>
+    <ul>
+      <li><a href="#Atomic">Numbers and Symbols</a></li>
+      <li><a href="#Operators">Operators</a></li>
+      <li><a href="#Self">$</a></li>
+      <li><a href="#Nth">#</a></li>
+    </ul></li>
+    <li><a href="#Debugging">4.5 Debugging</a></li>
+  </ul></li>
+</ul>  
+
+<br><hr>
+<a name="Introduction"></a>
+<h2>1 Introduction</h2>
+
+<p>GNU Annotated Hex (gah) is a binary file viewer with the additional
+features of being able to annotate the binary fields of the file with
+names and types.  It can read the annotations interactively or from a
+file, and applies them to the particular file being viewed.  A well
+written description file can be applied to many similar files.  For
+example, one description file can be applied to all OS/2 and Windows 3.1
+style DIB files.  The annotation language superficially resembles the
+syntax and semantics of C.</p>
+
+<br><hr>
+<a name="Invocation"></a>
+<h2>2 Program Invocation</h2>
+
+<p>GNU Annotated Hex can be invoked on the command line without loading
+an annotation file like this:
+<pre>    gah hexfile</pre>
+When invoked with a second argument, it loads and applies an annotation
+file.  Annotation files typically end with a <tt>.gah</tt> extension:
+<pre>    gah hexfile descfile.gah</pre>
+It cannot load zero length files or files where it cannot determine the
+file size.  If the description file contains errors, it will still load
+the viewer, but none of the annotations will be applied.  It will display
+the first error encountered in the description file, including the line
+number that the error occurred on.</p>
+
+<br><hr>
+<a name="Viewer"></a>
+<h2>3 Using the Viewer</h2>
+
+<p>When the viewer opens it will try to determine the optimal layout.
+This may vary depending on the dimensions of the terminal the program
+is running on.  The program requires to be run on a terminal which
+understands color.</p>
+
+<br><hr>
+<a name="KeyBindings"></a>
+<h3>3.1 Key Bindings</h3>
+
+<p>The viewer displays a movable cursor which initially highlights the
+first byte of the file.  The cursor can be moved with the arrow keys.
+If the cursor is moved down while on the last row of the display window,
+it will cause the window to shift down one row, as long as there is more
+data to view.  Likewise, moving the cursor up on the first row of the
+display will scroll the window up.  Moving right on the last column of the
+display will wrap the cursor around to the next line.  That is, it will
+move down one row and jump back to the leftmost column.  This doesn't
+occur if the cursor is also on the last row of the display.  Moving left
+on the first column performs the inverse behavior.  You can scroll the
+window a page at a time using the PageUp and PageDown keys.</p>
+
+<p>You can add an annotation starting at the current position of the
+cursor by pressing the <tt>a</tt> key and entering the description at the
+prompt.  See the section on writing annotations for the syntax and semantics
+of the annotation language.</p>
+
+<p>You can quit the program by pressing the <tt>q</tt> key.  Any annotations
+entered interactively will be lost.</p>
+
+<br><hr>
+<a name="Display"></a>
+<h3>3.2 Understanding the Display</h3>
+
+<p>The display consists of two windows, the hex window and the message window.
+The hex window displays file offsets on the left, hex in the middle, and ASCII
+values on the right.  The number of bytes in each row depends on the size of
+the terminal the program is showing on, but will always be a power of two.
+The message window is at the bottom of the screen and is by default empty.</p>
+
+<p>If the cursor is over a field with an annotation, the whole field will be
+highlighted in the hex window, and the field description will be displayed in
+the message window.  The description in the message window includes the field
+name on the first line, and if the field has a terminal type, its value will
+be displayed on the second line.</p>
+
+<br><hr>
+<a name="Language"></a>
+<h2>4 Writing Annotations</h2>
+
+<p>File format descriptions consist of series of annotations, declarations and
+statements.  Annotations are labels that include types.  These are applied to
+some region of the file so that when it is displayed in the viewer, the name
+and value of the field at that region can be displayed.  Declarations set some
+behavior of the compiler.  Statements include control flow and environment
+modifiers.  All these will be elaborated upon in the following sections.</p>
+
+<br><hr>
+<a name="Annotations"></a>
+<h3>4.1 Annotations</h3>
+
+<a name="Types"></a>
+<h4>Types</h4>
+
+<p>The simplest annotations consist of a type followed by a name.  Types can
+be terminal or structures.  Terminal types are lexically one word with three
+parts.  The parts are the type prefix, type width, and endianness.  There are
+six type prefixs: <tt>u</tt> for unsigned types, <tt>so</tt> for signed types
+in one's complement format, <tt>st</tt> for signed types in two's complement
+format, <tt>sm</tt> for signed types in sign / magnitude format, <tt>s</tt>
+for sized structure types, and <tt>b</tt> which is reserved for bitfields in
+a future version of the program.  Following the type prefix is the type width
+which is a decimal integer.  This can be any positive value for structures and
+bitfields, but is restrained for integer types, usually to 4 or 8.  After that
+is the endianness which is optional.  This consists of the single letter <tt>l</tt>
+for least significant byte first (little endian), or <tt>m</tt> for most
+significant byte first (big endian).
+If the endianness is missing, it will default to least significant byte first, or
+whatever has been set by <tt>lsbfirst</tt> and <tt>msbfirst</tt> declarations.
+Here's a few examples of terminal types:
+<pre>    u4        // unsigned 4-byte integer, little endian
+    st1       // signed 1-byte integer, two's complement representation
+    so2m      // signed 2-byte integer, one's complement big endian
+    s100      // 100 byte structure, fields unspecified</pre>
+A complete annotation, specifying an integer field called "x", might look
+like this:
+<pre>    u4 x;</pre>
+Note that all annotations must end with a semicolon.  You can enter this in
+the viewer at the prompt after hitting the <tt>a</tt> key.</p>
+
+<p>Annotation names must begin with an alphabet character or an underscore,
+followed by zero or more alphanumeric or underscore characters.  Type names
+and a few other keywords can't be used as names.</p>
+
+<p>As you might have noticed from the above example, description files can
+be commented with C++ sytle comments.</p>
+
+<p>As annotations are encountered, part of the file is matched and "eaten."
+If the annotations are read from a file, matching starts from the beginning.
+If annotations are read interactively, matching starts at the cursor.  The
+offset where the next annotation will start matching can be set manually
+with a <tt>set _ = x</tt> statement (see <a href="#Set">Set</a>).  So, for
+example, if the header of file format Foo consists of a four byte "magic"
+field, followed by a two byte format version
+field, then you could annotate it as:
+<pre>    u4 magic;
+    u2 version;</pre>
+Annotations are matched dynamically, so you can use control flow statements
+(covered further in <a href="#ControlFlow">Control Flow</a>) to write very
+general descriptions.  For example, suppose the Foo header continued for
+version 1 files with a two byte creation date field, while version 2
+files contained a four byte date/time creation field.  Then you could
+annotate that like this (continuing the above example):
+<pre>    if (version == 1)
+        u2 creation_date;
+    else
+        u4 creation_date_time;</pre></p>
+
+<a name="Structures"></a>
+<h4>Structures</h4>
+
+<p>Structure types can contain annotations inside of them.  A structure type
+is begun with the keyword <tt>s</tt> and in future versions, <tt>b</tt>.
+This is followed by a list of child annotations enclosed in matching curly
+braces, like this:
+<pre>    s{ u4 x; u4 y; }</pre>
+Structures can contain other structures, and even most declarations and
+statements.
+</p>
+
+<a name="Arrays"></a>
+<h4>Arrays</h4>
+
+<p>Repeating annotations (arrays) consist of a type, a name, and a repeat count enclosed
+in square brackets like C-style array declarations:
+<pre>    u4 x[4];
+    s{ st2 m[16]; u4 n[5]; } p[2];</pre>
+Only single dimensional arrays are allowed.  An array can have zero elements,
+which means it doesn't exist.</p>
+
+<a name="Parameters"></a>
+<h4>Parameters</h4>
+
+<p>Annotations can also have parameters.  These are basically just additional
+identification on top of the name.  This is useful for annotations that are
+added in <tt>while</tt> loops:
+<pre>    set n = 0;
+    while (n < foo)
+        u1 x(n);</pre>
+You can annotations in a while loop without parameters, but you'll have trouble
+telling them apart when they're displayed, and you'll only be able to reference
+the last one added in expressions (note: in gah 0.5 alpha, annotations with
+parameters are not supported in expressions anyway, but this will be added in
+gah 0.5).  You can added parameters to arrays as well.  The parameter applies
+to the entire array, so the repeat count comes first:
+<pre>    st2 x[4](n);</pre></p>
+
+<br><hr>
+<a name="Declarations"></a>
+<h3>4.2 Declarations</h3>
+
+<a name="Endianness"></a>
+<h4>Endianness</h4>
+
+<p>There are two declarations affecting default endianness:
+<tt>lsbfirst</tt> and <tt>msbfirst</tt>.  The first sets the default
+endianness to little endian and the latter sets it to big endian.  This
+means that a type written without specifying the endianness (in the third
+part - see the section <a href="#Types">Types</a>) will default to the
+given endianness.  Note that these declarations are executed dynamically
+when the annotations are applied, not when the file is parsed.  This means
+they can be used conditionally.  For example, some binary files can store
+data in either format and use a flag near the beginning of the file to
+indicate which format is used.  Hypothetically, say a file indicated big
+endian if the first byte is <tt>1</tt> and little endian if it's <tt>0</tt>.
+Then this would work for both cases:
+<pre>    u1 big_endian_flag;
+    if (big_endian_flag)
+        msbfirst;</pre>
+The effect of these statements last until another such statement is executed
+or the execution of the description completes.  That is, the effect is not
+scoped, but it also doesn't last after the description file, or interactively
+input description string has finished being applied.</p>
+
+<br><hr>
+<a name="Statements"></a>
+<h3>4.3 Statements</h3>
+
+<a name="ControlFlow"></a>
+<h4>Control Flow</h4>
+
+<p>There are two control flow statements: <tt>if</tt> / <tt>else</tt> and
+<tt>while</tt>.  These have the same syntax and semantics as in C.  If the
+condition of the <tt>if</tt> or <tt>while</tt> evaluates to nonzero, then
+the annotation, declaration or statement immediately following (called the
+body) is processed.  In the case of <tt>while</tt>,
+the statement is processed repeatedly until the condition evaluates to zero.
+Therefore, something in the body must change the value of the condition, or
+an infinite loop will occur.  If an <tt>else</tt> follows an <tt>if</tt>
+statement, and the condition of the <tt>if</tt> evaluates to zero, then the
+statement following the <tt>else</tt> is executed.  An <tt>else</tt> is
+always paired up with the last finished <tt>if</tt> statement preceding it.
+The body of an <tt>if</tt>, <tt>else</tt>, or <tt>while</tt> may contain more
+than one annotation, declaration or statement provided they are enclosed in
+curly braces.  Here are some examples:
+<pre>    if (foo < 5) u4 x; else s{ u2 p1; u2 p2; } x[10];
+
+    if (! foo) set t = 7;
+    else { u3 m; u1 n; }
+
+    set n = 0; while (n < 24)
+    {
+        if (n % 2)
+            if (n & 10)
+                u2 z(n);
+            else
+                u4 z(-n);
+        set n = n + 1;
+    }
+
+    if (foo) { if (bar) u2 w; }
+    else so1 q;</pre></p>
+
+<a name="Set"></a>
+<h4>Set</h4>
+
+<p><tt>set</tt> statements allow you to assign values to variables.  The
+syntax is
+<pre>set id = expr;</pre>
+where <tt>id</tt> is the name of the variable (allowed names are the same
+as those allowed for annotation names - see <a href="#Types">Types</a>)
+and <tt>expr</tt> is evaluated to obtain the value of the variable (see
+<a href="#Expressions">Expressions</a>).  The expression is evaluated
+eagerly, when the <tt>set</tt> statement is executed.  If <tt>id</tt> was
+previously defined in another <tt>set</tt> statement, or anywhere as the name of
+a top-level terminal annotation, the value of the last executed <tt>set</tt>
+statement will take
+precedence when the identifier is used in expressions.  If the name was
+used for an annotation in a structure, then that name will have the value
+in the set expression when used by itself, but the structure member can
+still be accessed when used as a member of the parent structure.
+Similarly, if the name is used for a structure at the top-level, then
+it can still be used to refer to the structure members.  Likewise, arrays
+at the top-level can be accessed by subscript.  In other words, <tt>set</tt>
+names are only recognized when they appear unadorned, without member
+access, array subscript, or parameter, etc., but then they take precedence
+over annotations.  For example:
+<pre>    set x = 2;
+    u1 x;        // say this has the value 4
+    u1 y(x);     // this will be y(2) since set takes precedence over annotation names
+
+    s {
+        u1 x;    // say this has value 6
+    } y;
+    u1 z(y.x);   // this will be z(6)
+    set y = 8;
+    u1 q(y.x);   // q(6)
+    u1 r(y);     // r(8)
+
+    u1 a[7];
+    set a = 10;
+    u1 t(a[3]);  // using a[3] from u1 a[7], etc.</pre>
+<tt>set</tt> names are set dynamically, are not scoped, and do not remain
+once the current file or interactively input description has finished
+executing.</p>
+
+<p>A special case of <tt>set</tt> statement is when we set the identifier
+<tt>_</tt>.  The special identifier <tt>_</tt> holds the offset where the
+current annotation will be applied if the expression is used in a repeat
+count or parameter of an annotation, or inside a structure.  It holds the offset where the
+next annotation will be applied if it is used outside of an annotation (at
+the top-level).  You can set this offset at the top-level to another offset
+so long as the destination offset is not already contained by an annotation.
+For example, suppose a file started like this:
+<pre>    u4 x;        // Applied at offset 0
+    set _ = 12;
+    u4 y;        // Applied at offset 12</pre></p>
+
+<br><hr>
+<a name="Expressions"></a>
+<h3>4.4 Expressions</h3>
+
+<a name="Atomic"></a>
+<h4>Numbers and Symbols</h4>
+
+<p>Expressions in GAH intentionally mimic the syntax and semantics of
+expressions in C, except in a few places.  Atomic expressions include
+simple numbers and symbols.  Numbers can be written in decimal or
+hexadecimal notation.  Hexadecimal numbers are prefixed with <tt>0x</tt>
+or <tt>0X</tt> and can be either upper- or lower-case.  Examples of
+valid numbers are <tt>4114</tt>, <tt>0xabcd1234</tt>, <tt>0xF00bA2</tt>, etc.
+Identifiers are explained in the section <a href="#Types">Types</a>.  A
+simple identifier will reference either a top-level annotation or a
+<tt>set</tt> variable (see <a href="#Set">Set</a>).  Members inside
+structures can be accessed with the <tt>.</tt> (dot) operator as in C.
+Array annotation members can be accessed with a subscript expression
+enclosed in matching square brackets.  Here are some examples:
+<pre>    u4 x;                    // (1)
+    s{ u4 x1; u4 x2; } z1;   // (2)
+    s{ s{ u4 m2; } m1; } m;  // (3)
+    u4 a[8];                 // (4)
+    s{ u4 x; } z2[4];        // (5)
+    s{ u4 x[10]; } z3[2];    // (6)
+
+    set foo = x;             // (1)
+    set foo = z1.x2;         // (2)
+    set foo = m.m1.m2;       // (3)
+    set foo = a[7];          // (4)
+    set foo = z2[1].x;       // (5)
+    set foo = z3[0].x[9];    // (6)</pre>
+In each case, the number in parenthesis shows the relation between the
+declaration and use of each particular symbol.</p>
+
+<a name="Operators"></a>
+<h4>Operators</h4>
+
+<p>GAH has many of the operators available in C.  Notable exceptions
+include assignment statements (including increment and decrement) and the
+comma operator.  There is also no unary plus operator since this is
+unnecessary.  Following is a table of operators in order of precedence:
+<table>
+  <tr><th>Operators</th><th>Associativity</th></tr>
+  <tr><td><tt>[] .</tt></td><td>left to right</td></tr>
+  <tr><td><tt>! ~ -</tt></td><td>right to left</td></tr>
+  <tr><td><tt>* / %</tt></td><td>left to right</td></tr>
+  <tr><td><tt>+ -</tt></td><td>left to right</td></tr>
+  <tr><td><tt>&lt;&lt; &gt;&gt;</tt></td><td>left to right</td></tr>
+  <tr><td><tt>&lt; &lt;= &gt; &gt;=</tt></td><td>left to right</td></tr>
+  <tr><td><tt>== !=</tt></td><td>left to right</td></tr>
+  <tr><td><tt>&amp;</tt></td><td>left to right</td></tr>
+  <tr><td><tt>^</tt></td><td>left to right</td></tr>
+  <tr><td><tt>|</tt></td><td>left to right</td></tr>
+  <tr><td><tt>&amp;&amp;</tt></td><td>left to right</td></tr>
+  <tr><td><tt>||</tt></td><td>left to right</td></tr>
+  <tr><td><tt>?:</tt></td><td>right to left</td></tr>
+</table>
+There are also signed and unsigned types in GAH.  Unlike C, all values
+are the same size.  Constants default to signed type.  The special varible
+<tt>_</tt> is always unsigned, as is the special field <tt>#</tt>.  When
+signed and unsigned types are mixed in expressions, signed types are
+converted to unsigned types in the same way they are in C.  This means
+that if a negative value is converted to an unsigned type, the value is
+the largest representable value in the unsigned type that is congruent
+to the original value modulo two to the width of the unsigned type.  While
+this is admittedly rather nasty, it's done for the same reason it's done
+in C: because that way we can represent signed and unsigned types with a
+unified internal representation.  Further, it may be added as a feature in
+a later version that GAH can output C code that will read binary files
+based on their description files, and if this feature is added it may be
+important that conversions occur in the same way as in C.  On the other
+hand, if this behavior ends up causing problems, I may take it out and
+implement arithmetic <em>the right way</em>.
+There are two instances where GAH takes a stand and doesn't
+mimic the behavior of C: comparisons and conditional expressions.  When
+a comparison between signed and unsigned types, the result is always
+correct (<em>i.e.</em>, a negative value always compares less than an
+unsigned value).  In conditional expressions, the two possible results
+need not have the same type, and the resulting type is the same as the
+type of the chosen expression.  Other than the exceptions stated here,
+the operators act identically to their equivalents in C, except with
+some error checking (<em>e.g.</em>, on array bounds and division).</p>
+
+<a name="Self"></a>
+<h4>$</h4>
+
+<p>The special object <tt>$</tt> (pronounced <em>self</em>) is used to stand
+for the current annotation.  When used in a repeat count, or parameter,
+it stands for the annotation for which that expression will be applied.
+When used in a structure and not in one of the above cases, it stands for
+the enclosing structure.  It must be followed by a member access.  Here
+are some examples:
+<pre>    s{ u4 x; set foo = $.x; } t1;    // $.x stands for t1.x
+    s{ u4 y; } t2($.y);              // $.y stands for t2.y</pre>
+You can use <tt>$$</tt> (pronounced <em>super</em>) to stand for the
+parent structure of <tt>$</tt>
+and <tt>$$$</tt> (<em>super-duper</em>?) to stand for the grandparent structure and so on.
+We'll call <tt>$</tt>, <tt>$$</tt>, etc. relative references.
+Here are some more examples:
+<pre>    s{ u4 x; u4 y[$$.x]; } t1;    // $ stands for y so $$ stands for t1
+    u4 u; s{ u4 v; set foo = $$.u + $.v; } t2;</pre>
+It should be noted that subscripts are not allowed on relative references.
+This makes sense because by definition <tt>$</tt> may not be completely
+instantiated and therefore we can't necessarily know its size needed to
+perform subscript calculations.  Further, any annotation referenced by a
+relative reference cannot repeat (be an array) because if it did it would
+be dubious as to which element exactly the relative reference referred to
+(and without being able to subscript the relative reference, it can't be
+made explicit).  Here are some examples to hopefully make the problems clear:
+<pre>    s{ u4 x; } t1[$.x];          // illegal: is $ t1[0], t1[1], etc.?
+
+    s{ u4 x; u4 y[$$.x]; } t2;    // this is ok
+    // but the following is illegal: t3[0].x and t3[1].x may differ and hence
+    // t3[0] and t3[1] may differ in size which violates array semantics
+    s{ u4 x; u4 y[$$.x]; } t3[2];
+
+    // the following is why subscripts are illegal on $: to find the value of
+    // t4[1].x, we must know the size of t4[0], but this could be either 4 or
+    // 104 depending on the value of t4[1].x
+    s{ u4 x; if ($[1].x) u4 y[100]; } t4[2];
+
+    // this is ok since t6.x is referenced and t6 doesn't repeat; it doesn't
+    // matter if t5 repeats since it's not itself referenced by anything
+    s{ u4 x; s{ u4 y; if ($$.x) u4 z; } t5[2]; } t6;
+
+    // this is illegal since t7 is referenced and, although it doesn't directly
+    // repeat, it indirectly repeats because its parent repeats
+    s{ s{ u4 x; u4 y[$$.x]; } t7; } t8[2];</pre></p>
+
+<a name="Nth"></a>
+<h4>#</h4>
+
+<p>This special field will probably be removed in a future version and should not
+be used.  The idea was that it would be the number of times an annotation had
+been applied, therefore giving a simple way to assign unique parameters to
+annotations in <tt>while</tt> loops.  For example:
+<pre>    while (foo) {
+        u4 x($.#);
+        set foo = foo - 1;
+    }</pre>
+The first time the body of the loop executed, <tt>x(1)</tt> would be applied,
+the second time <tt>x(2)</tt> would be applied, etc.  However, this feature is
+only syntactic sugar as the same goal can be accomplished like this:
+<pre>    set n = 1;
+    while (foo) {
+        u4 x(n);
+        set n = n + 1;
+        set foo = foo - 1;
+    }</pre>
+While this isn't quite as pretty, it'll do.  Besides, I plan to add string types
+in a future version, and when that is implemented, the paramaters for annotations
+will likely usually be strings instead of numbers, further reducing the need for
+<tt>#</tt>.</p>
+
+<br><hr>
+<a name="Debugging"></a>
+<h3>4.5 Debugging</h3>
+
+<p>Sometimes the annotation files aren't as easy to write as you might first
+think, and you get error messages or wrong results when you try to load them.
+To help debug the description files, you can run the program with the
+<tt>--debug-file=</tt><em>&lt;filename&gt;</em> option.  This will dump
+state info to <em>&lt;filename&gt;</em> as the annotations are applied.  This
+info includes names and values of variables, and annotations that are added,
+along with repeat counts, paramters and offsets.  It should be fairly self
+explanatory looking at the output.  There is no <tt>print</tt> or <tt>debug</tt>
+statement you can put in your description files because you can get pretty
+close to the same effect with <tt>set</tt> statements.  If you want to see the
+value of some expression at some point in the file, try setting a variable to
+that value.  The name of the variable doesn't matter, as long as it's not used
+in the program.  For example:
+<pre>    // I want to know the value the while condition
+    while (foo[n].x + bar[m] - 1 < 7)
+        ...
+
+    // so I can rewrite it as
+    set dummy = foo[n].x + bar[m] - 1;
+    while (dummy < 7)
+        ...</pre>
+Since the value of all set expressions are dumped to the debug log, you can
+then peek at the values of expressions.</p>
+
+<p>One problem that can occur is that of infinite loops.  If it appears the
+description file has an infinite loop in it (you load a file and the program
+hangs), try typing Ctrl-C to stop execution and return to the viewer (this
+was implemented in 0.5 Beta, so it's not available in 0.5 Alpha).</p>
+
+<br><hr>
+<address>Dan Hipschman
+&lt;<a href="mailto:dsh@linux.ucla.edu">dsh@linux.ucla.edu</a>&gt;</address>
+<!-- hhmts start -->Last modified: Mon Sep 25 15:29:20 PDT 2006 <!-- hhmts end -->
+</body> </html>

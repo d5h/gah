@@ -1,0 +1,51 @@
+
+	To do in version 0.5
+
+	- Fix bugs
+	- Finish annotation files
+	- Don't use GNU in our name unless they want us to
+
+	New in version 0.5b
+
+	- Fixed parameter display bug and conversion bug
+	- Fail in configure.ac if necessary functions aren't found
+	- Break out of [infinite loops] reading annotation files on ^C
+	- Fix Makefile.am so doc and annotation files are installed
+	- Added more debug hooks
+	- Handle conversions in expressions more like C
+	- Finished documentation
+
+	New in version 0.5a
+
+	- Reads annotations from files
+	- Better error checking, handling and reporting
+	- Greatly expanded annotation language (AL)
+	- Added '_' to stand for current offset
+	- Lex hex formatted integers
+	- Added "set id = expr"
+	- Added "if", "if / else" and "while" for control flow
+	- Added '@' operator for getting values at a given offset
+	- Added '$' object to stand for current annotation (self)
+	- Added '$$', '$$$', etc. to stand for super, super super, etc.
+	- Added '#' member to stand for annotation instantiation count
+	- Added "id(expr)" to add unique info to annotations in while loops
+	- Display arrays with one element with subscript syntax
+	- Added --version, --help, and --debug-file options
+	- Added end of line comments
+	- Added "lsbfirst" and "msbfirst" declarations 
+	- Signed and unsigned types handled (almost) correctly in AL
+	- Documentation (needs finishing)
+	- Bug fixes
+
+	New in version 0.1
+
+	- Basic hex viewer features
+	- Hex and ASCII displays with offsets shown
+	- Automatically fits window to largest power of two
+	- Scroll with arrow keys or Page-Up / Page-Down
+	- Interactive annotations including types and repetitions
+	- Color highlighting of annotated fields
+	- Shows names and values (based on type) of annotated fields
+	- Allows nested annotations
+	- Can fully annotate OS/2-style and Windows DIB bitmaps
+	- Sensible display of error messages

@@ -1,0 +1,114 @@
+// OS/2 and Windows 3.0/95 DIB
+// This uses the names in the Win32 API structures.
+
+// Part of the GNU Annotated Hex project.
+// Copyright (C) 2006 Dan Hipschman
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+// 02110-1301, USA.
+
+s {
+  u2 bfType;
+  u4 bfSize;
+  u2 bfReserved1;
+  u2 bfReserved2;
+  u4 bfOffsetBits;
+} bmfh;
+
+if (u4@_ == 12)
+  s {
+    u4 bcSize;
+    u2 bcWidth;
+    u2 bcHeight;
+    u2 bcPlanes;
+    u2 bcBitCount;
+    set windib = 0;
+    set width = $.bcWidth;
+    set height = $.bcHeight;
+    set depth = $.bcBitCount;	
+    set ncolors = 0;
+  } bmch;
+else
+  s {
+    u4 biSize;
+    st4 biWidth;
+    st4 biHeight;
+    u2 biPlanes;
+    u2 biBitCount;
+    u4 biCompression;
+    u4 biSizeImage;
+    st4 biXPelsPerMeter;
+    st4 biYPelsPerMeter;
+    u4 biClrUsed;
+    u4 biClrImportant;
+    set windib = 1;
+    set width = $.biWidth;
+    set height = $.biHeight;
+    set depth = $.biBitCount;
+    set ncolors = $.biClrUsed;
+  } bmih;
+
+set hang = 3 * width & 3;
+set npad = hang ? 4 - hang : 0; 
+
+if (depth == 1 || depth == 4 || depth == 8)
+  s {
+    u1 rgbBlue;
+    u1 rgbGreen;
+    u1 rgbRed;
+    if (windib) u1 rgbReserved;
+  } rgb [ncolors ? ncolors : 1 << depth];
+
+set _ = bmfh.bfOffsetBits;
+
+if (depth == 1)
+  s {
+    u1 columns8[((width + 7) & ~7) / 8];
+    u1 padding[npad];
+} pixelRow[height];
+else if (depth == 4)
+  s {
+    u1 columns2[((width + 1) & ~1) / 2];
+    u1 padding[npad];
+} pixelRow[height];
+else if (depth == 8)
+s {
+    u1 columns[width];
+    u1 padding[npad];
+} pixelRow[height];
+else if (depth == 16)
+s {
+    u2 column[2 * width];
+    u1 padding[npad];
+} pixelRow[height];
+else if (depth == 24)
+  s {
+    s {
+      u1 blue;
+      u1 green;
+      u1 red;
+    } column[width];
+    u1 padding[npad];
+  } pixelRow[height];
+else if (depth == 32)
+  s {
+    s {
+      u1 blue;
+      u1 green;
+      u1 red;
+      u1 reserved;
+    } column[width];
+    u1 padding[npad];
+  } pixelRow[height];

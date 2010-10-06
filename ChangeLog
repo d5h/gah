@@ -1,0 +1,90 @@
+2006-09-25  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah: beta release!
+	* gah: named current revision gah_0_5_beta
+	* gah: version 0.5b
+
+	* configure.ac: don't build if missing headers / libs / funcs
+	* Makefile.am: install AUTHORS, COPYING, README, NEWS, etc.
+	* NEWS: update for 0.5b
+
+	* src/an_lex.l: allow ^C while interpreting annot files
+	* src/an_parse.y: fixed single operand conversion bug, added more
+	debug hooks
+	* src/main.c: fixed faulty valstr function, added nstr and typestr,
+	free all annots on exit, and fixed a wprintw format string bug
+
+	* doc/gah_manual.html: Finished
+	* doc/Makefile.am: install manual
+
+	* data/Makefile.am: install data
+
+2006-09-19  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah: initial release!
+	* gah: named current revision gah_0_5_alpha
+	* gah: version 0.5a
+	* gah: grok types (signed and unsigned), correctly handle
+	them in comparisons, add debug-file command line option
+
+2006-09-17  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah: named current revision gah_0_4_prealpha_2
+	* gah/doc: Started user manual
+
+	* gah: named current revision gah_0_4_prealpha_1
+	* gah: added copyrights, line numbers in error messages,
+	lsbfirst and msbfirst statements, fixed a memory leak in
+	parse_string, implemented lazy evaluation (short circuit)
+	for AND, OR, and COND expressions, added --help and
+	--verbose options
+
+2006-09-16  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah: named current revision gah_0_3_prealpha_6
+	* gah: added while statements, end of line comments,
+	annot params, fixed some bugs in handling of _ and $
+
+2006-09-14  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah/src: named current revision gah_0_3_prealpha_5
+	* gah: added # syntax
+
+	* gah/src: named current revision gah_0_3_prealpha_4
+	* gah: added $ syntax
+
+2006-09-13  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah/src: named current revision gah_0_3_prealpha_3
+	* gah: added value of _ in expressions
+
+	* gah/src: named current revision gah_0_3_prealpha_2
+	* gah: added type @ expr expressions
+
+	* gah/src: named current revision gah_0_3_prealpha_1
+	* gah: added table, set id, and evaluate environments
+
+2006-09-12  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah: version 0.2
+
+	* gah: named current revision gah_0_2_prealpha_4
+	* gah: support hex constants in the lexer, added
+	set _ syntax with error checking
+
+	* gah/src: named current revision gah_0_2_prealpha_3
+	* gah: added error recovery, zero length file kludge,
+	type range checking, value past end of file checking
+
+2006-09-10  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah: named current revision gah_0_2_prealpha_2
+
+2006-09-09  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah: named current revision gah_0_2_prealpha_1
+
+2006-08-12  Dan Hipschman  <dsh@linux.ucla.edu>
+
+	* gah: version 0.1
+

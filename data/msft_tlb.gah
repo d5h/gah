@@ -1,0 +1,253 @@
+// MSFT Typelib file format
+// Documentation from Wine project (although the names are changed).
+
+// Part of the GNU Annotated Hex project.
+// Copyright (C) 2006 Dan Hipschman
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+// 02110-1301, USA.
+
+s {
+  st4 magic;
+  s {
+    u2 major;
+    u2 minor;
+  } file_version;
+  st4 lib_guid_offset;
+  st4 locale_id;
+  st4 locale_id2;
+  st4 file_flags;
+  st4 lib_version;
+  st4 lib_flags;
+  st4 num_typeinfos;
+  st4 helpstring_index;
+  st4 helpstring_context;
+  st4 help_context;
+  st4 num_nametable_names;
+  st4 num_nametable_chars;
+  st4 name_index;
+  st4 helpfile_index;
+  st4 custom_data_offset;
+  st4 always_0x20;
+  st4 always_0x80;
+  st4 dispatch_offset;
+  st4 num_import_infos;
+} header;
+
+st4 typeinfo_offsets[header.num_typeinfos];
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} typeinfo_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} import_info_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} import_file_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} reference_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} guid_hash_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} guid_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} name_hash_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} name_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} string_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} type_descriptor_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} array_descriptor_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} custom_data_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} custom_data_guid_table;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} mystery_table_1;
+
+s {
+  st4 offset;
+  st4 length;
+  st4 always_0xffffffff;
+  st4 always_0x0f;
+} mystery_table_2;
+
+set n = 0;
+while (n < header.num_typeinfos) {
+  set _ = typeinfo_table.offset + typeinfo_offsets[n];
+
+  s {
+    st2 typeinfo_index;
+    st2 alignment_and_type_kind;
+    st4 additional_memory_offset;
+    st4 mystery_field_1;
+    st4 mystery_field_2;
+    st4 always_0x3;
+    st4 always_zero_1;
+    st2 num_functions;
+    st2 num_fields;
+    st4 always_zero_2;
+    st4 always_zero_3;
+    st4 always_zero_4;
+    st4 always_zero_5;
+    st4 guid_table_offset;
+    st4 flags;
+    st4 name_table_offset;
+    st4 version;
+    st4 docstring_table_offset;
+    st4 helpstring_context;
+    st4 help_context;
+    st4 custom_data_table_offset;
+    st2 num_implemented_interfaces;
+    st2 virtual_table_size;
+    st4 size;
+    st4 type_offset;
+    st2 num_inherited_interfaces;
+    st2 num_inherited_functions;
+    st4 always_zero_6;
+    st4 always_0xffffffff;
+  } typeinfo(n);
+
+  set n = n + 1;
+}
+
+if (guid_hash_table.offset != -1) {
+  set _ = guid_hash_table.offset;
+  u1 guid_hash_data[guid_hash_table.length];
+}
+
+if (guid_table.offset != -1) {
+  set _ = guid_table.offset;
+  u1 guid_data[guid_table.length];
+}
+
+if (reference_table.offset != -1) {
+  set _ = reference_table.offset;
+  u1 reference_data[reference_table.length];
+}
+
+if (import_info_table.offset != -1) {
+  set _ = import_info_table.offset;
+  u1 import_info_data[import_info_table.length];
+}
+
+if (import_file_table.offset != -1) {
+  set _ = import_file_table.offset;
+  u1 import_file_data[import_file_table.length];
+}
+
+if (name_hash_table.offset != -1) {
+  set _ = name_hash_table.offset;
+  u1 name_hash_data[name_hash_table.length];
+}
+
+if (name_table.offset != -1) {
+  set _ = name_table.offset;
+  u1 name_data[name_table.length];
+}
+
+if (string_table.offset != -1) {
+  set _ = string_table.offset;
+  u1 string_data[string_table.length];
+}
+
+if (type_descriptor_table.offset != -1) {
+  set _ = type_descriptor_table.offset;
+  u1 type_descriptor_data[type_descriptor_table.length];
+}
+
+if (array_descriptor_table.offset != -1) {
+  set _ = array_descriptor_table.offset;
+  u1 array_descriptor_data[array_descriptor_table.length];
+}
+
+if (custom_data_table.offset != -1) {
+  set _ = custom_data_table.offset;
+  u1 custom_data_data[custom_data_table.length];
+}
+
+if (custom_data_guid_table.offset != -1) {
+  set _ = custom_data_guid_table.offset;
+  u1 custom_data_guid_data[custom_data_guid_table.length];
+}
